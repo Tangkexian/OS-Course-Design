@@ -302,6 +302,8 @@ fork(void)
   np->cwd = idup(p->cwd);
 
   safestrcpy(np->name, p->name, sizeof(p->name));
+  np->trace_mask = p->trace_mask;
+
 
   pid = np->pid;
 
@@ -654,3 +656,21 @@ procdump(void)
     printf("\n");
   }
 }
+
+
+
+uint64 nproc(void) {
+  struct proc* p; // 定义一个指向 proc 结构体的指针 p
+  int count = 0; // 定义计数器 count 并初始化为 0
+
+  for (p = proc; p < &proc[NPROC]; p++) { // 遍历进程表中的所有进程
+    acquire(&p->lock); // 获取进程表的锁
+    if (p->state != UNUSED) { // 如果进程的状态不为 UNUSED
+      count++; // 计数器加一
+    }
+    release(&p->lock); // 释放锁
+  }
+
+  return count; // 返回计数器的值
+}
+

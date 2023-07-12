@@ -80,3 +80,15 @@ kalloc(void)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+uint64 free_mem(void) {
+  struct run *r; // 定义一个指向 run 结构体的指针 r
+  int count = 0; // 定义计数器 count 并初始化为 0
+  acquire(&kmem.lock); // 获取内存分配器的锁
+  for(r = kmem.freelist; r; r = r->next) { // 遍历空闲链表中的所有内存块
+    count++; // 计数器加一
+  }
+  release(&kmem.lock); // 释放锁
+  return count * PGSIZE; // 返回计数器乘以每个内存块的大小
+}
+
