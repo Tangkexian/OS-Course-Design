@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+pte_t *walk(pagetable_t pagetable, uint64 va, int alloc);
 
 uint64
 sys_exit(void)
@@ -81,6 +82,42 @@ int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  // 定义变量
+  uint64 vaddr;
+  int num;
+  uint64 res_addr;
+
+  // 获取系统调用的参数
+  argaddr(0, &vaddr);
+  argint(1, &num);
+  argaddr(2, &res_addr);
+
+  // 获取当前进程和页表
+  struct proc* p = myproc();
+  pagetable_t pagetable = p->pagetable;
+
+  // 初始化结果变量
+  uint64 res = 0;
+
+  // 遍历虚拟地址空间
+  for (int i = 0; i < num; i++) {
+    // 计算当前虚拟地址
+    uint64 va = vaddr + PGSIZE * i;
+    // 获取对应的页表项（PTE）
+    pte_t* pte = walk(pagetable, va, 1);
+    // 检查 PTE_A 位是否为 1
+    if (*pte & PTE_A) {
+      // 清除 PTE_A 位
+      *pte &= (~PTE_A);
+      // 更新结果变量
+      res |= (1L << i);
+    }
+  }
+
+  // 将结果复制到用户空间
+  copyout(pagetable, res_addr, (char*)&res, sizeof(uint64));
+
+  // 返回 0 表示成功
   return 0;
 }
 #endif

@@ -432,3 +432,50 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+
+void vmprint(pagetable_t pagetable) {
+  // 打印页表的地址
+  printf("page table %p\n", pagetable);
+  // 遍历页表中的每个页表项（PTE）
+  for (int i = 0; i < 512; i++) {
+    // 获取当前页表项
+    pte_t pte = pagetable[i];
+    // 检查当前页表项是否有效（PTE_V 位是否为 1）
+    if (pte & PTE_V) {
+      // 计算物理地址
+      uint64 pa = PTE2PA(pte);
+      // 打印当前页表项的索引、值和对应的物理地址
+      printf("..%d: pte %p pa %p\n", i, pte, pa);
+      // 获取二级页表
+      pagetable_t second = (pagetable_t)PTE2PA(pte);
+      // 遍历二级页表中的每个页表项（PTE）
+      for (int j = 0; j < 512; j++) {
+        // 获取当前页表项
+        pte = second[j];
+        // 检查当前页表项是否有效（PTE_V 位是否为 1）
+        if (pte & PTE_V) {
+          // 计算物理地址
+          pa = PTE2PA(pte);
+          // 打印当前页表项的索引、值和对应的物理地址
+          printf(".. ..%d: pte %p pa %p\n", j, pte, pa);
+          // 获取三级页表
+          pagetable_t third = (pagetable_t)PTE2PA(pte);
+          // 遍历三级页表中的每个页表项（PTE）
+          for (int k = 0; k < 512; k++) {
+            // 获取当前页表项
+            pte = third[k];
+            // 检查当前页表项是否有效（PTE_V 位是否为 1）
+            if (pte & PTE_V) {
+              // 计算物理地址
+              pa = PTE2PA(pte);
+              // 打印当前页表项的索引、值和对应的物理地址
+              printf(".. .. ..%d: pte %p pa %p\n", k, pte, pa);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
