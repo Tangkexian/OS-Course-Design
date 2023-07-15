@@ -66,6 +66,7 @@ usertrap(void)
 
     syscall();
   } else if((which_dev = devintr()) != 0){
+    // ok
     if(which_dev == 2 && p->waitReturn == 0)
     {
       if(p->interval != 0)
@@ -232,7 +233,6 @@ devintr()
 }
 
 void switchTrapframe(struct trapframe* trapframe, struct trapframe *trapframeSave){
-  // 将 trapframeSave 中的所有成员复制到 trapframe 中
 trapframe->kernel_satp = trapframeSave->kernel_satp;
 trapframe->kernel_sp = trapframeSave->kernel_sp;
 trapframe->epc = trapframeSave->epc;

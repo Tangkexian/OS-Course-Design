@@ -117,8 +117,16 @@ allocproc(void)
   return 0;
 
 found:
-  p->pid = allocpid();
-  p->state = USED;
+  p->pid = allocpid(); // 为当前进程分配一个新的 pid
+  p->state = USED; // 将当前进程的状态设置为 USED
+
+  p->spend = 0; // 将当前进程的 spend 成员设置为 0
+
+  if ((p->trapframeSave = (struct trapframe*)kalloc()) == 0) { // 为当前进程分配一个 trapframe 结构体
+    // freeproc(p);
+    release(&p->lock); // 释放当前进程的锁
+    return 0; // 返回 0
+  }
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -152,9 +160,12 @@ freeproc(struct proc *p)
 {
   if(p->trapframe)
     kfree((void*)p->trapframe);
+  if(p->trapframeSave)
+    kfree((void*)p->trapframeSave);
   p->trapframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
+  
   p->pagetable = 0;
   p->sz = 0;
   p->pid = 0;

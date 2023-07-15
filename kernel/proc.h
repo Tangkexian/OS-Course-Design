@@ -105,4 +105,9 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  uint64 interval;             // the time of alarm
+  void(*handler)();            // alarm处理函数
+  uint64 spend;                // 记录经过了多少个ticks经过了多少时间
+  struct trapframe *trapframeSave;
+  int waitReturn;              // 如果等待返回1，否则返回0
 };

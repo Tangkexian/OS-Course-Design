@@ -70,6 +70,7 @@ sys_sleep(void)
     sleep(&ticks, &tickslock);
   }
   release(&tickslock);
+  backtrace();
   return 0;
 }
 
@@ -94,4 +95,32 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+uint64 sys_sigalarm(void)
+{
+  struct proc* myProc = myproc(); // 定义一个指向 proc 结构体的指针 myProc，并将其初始化为当前进程
+  int n;
+  uint64 handler;
+  if (argint(0, &n) < 0) // 使用 argint 函数获取第一个参数的值并将其存储在变量 n 中
+  {
+    return -1; // 如果获取失败，则返回 -1
+  }
+  myProc->interval = n; // 将当前进程的 interval 成员设置为 n
+  if (argaddr(1, &handler) < 0) // 使用 argaddr 函数获取第二个参数的值并将其存储在变量 handler 中
+  {
+    return -1; // 如果获取失败，则返回 -1
+  }
+  myProc->handler = (void(*)())handler; // 将当前进程的 handler 成员设置为指向函数的指针，该函数由变量 handler 指定
+  return 0; // 函数返回 0
+
+}
+
+
+uint64 sys_sigreturn(void)
+{
+  struct proc* myProc = myproc();
+  switchTrapframe(myProc->trapframe,myProc->trapframeSave);
+  myProc->waitReturn = 0;
+  return 0;
 }
