@@ -25,7 +25,7 @@ void
 Init()
 {
   for (int i = 0; i < NBUCKET; ++i)
-    pthread_mutex_init(&lock[i], NULL);
+    pthread_mutex_init(&lock[i], NULL); // 初始化每个桶的锁
 }
 
 double
@@ -46,28 +46,26 @@ insert(int key, int value, struct entry **p, struct entry *n)
   *p = e;
 }
 
-static 
+static
 void put(int key, int value)
 {
-  int i = key % NBUCKET;
-
-  pthread_mutex_lock(&lock[i]);//lab6-2
-  // is the key already present?
-  struct entry *e = 0;
+  int i = key % NBUCKET; // 计算key所在的桶
+  pthread_mutex_lock(&lock[i]); // 锁定该桶
+  // key是否已经存在？
+  struct entry* e = 0;
   for (e = table[i]; e != 0; e = e->next) {
-    if (e->key == key) {
-      pthread_mutex_unlock(&lock[i]);//lab6-2
+    if (e->key == key)
       break;
-    }
   }
-  if(e){
-    // update the existing key.
+  if (e) {
+    // 更新现有key的值
     e->value = value;
-  } else {
-    // the new is new.
+  }
+  else {
+    // 插入新key
     insert(key, value, &table[i], table[i]);
   }
-  pthread_mutex_unlock(&lock[i]);//lab6-2
+  pthread_mutex_unlock(&lock[i]); // 解锁该桶
 }
 
 static struct entry*

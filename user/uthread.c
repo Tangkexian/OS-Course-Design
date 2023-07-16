@@ -98,9 +98,9 @@ thread_create(void (*func)())
   }
   t->state = RUNNABLE;
   // YOUR CODE HERE
-  // user ra return func in switch
+  //设置线程结构体 t 的上下文中的返回地址（ra 寄存器）为函数 func 的地址
   t->context.ra = (uint64)func;
-  // point to stack top(highest addr)
+  // 将线程结构体 t 的上下文中的栈指针（sp 寄存器）指向栈的顶部（最高地址）
   t->context.sp = (uint64)t->stack + STACK_SIZE;
 }
 
