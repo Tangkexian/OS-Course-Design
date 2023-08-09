@@ -25,6 +25,7 @@ void            consputc(int);
 // exec.c
 int             exec(char*, char**);
 
+
 // file.c
 struct file*    filealloc(void);
 void            fileclose(struct file*);
@@ -170,7 +171,8 @@ uint64          walkaddr(pagetable_t, uint64);
 int             copyout(pagetable_t, uint64, char *, uint64);
 int             copyin(pagetable_t, char *, uint64, uint64);
 int             copyinstr(pagetable_t, char *, uint64, uint64);
-void            vmprint(pagetable_t pagetable);
+void            vmprint(pagetable_t);
+
 
 // plic.c
 void            plicinit(void);
@@ -182,6 +184,8 @@ void            plic_complete(int);
 void            virtio_disk_init(void);
 void            virtio_disk_rw(struct buf *, int);
 void            virtio_disk_intr(void);
+
+
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

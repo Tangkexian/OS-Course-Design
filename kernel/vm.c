@@ -433,49 +433,56 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
   }
 }
 
-
-void vmprint(pagetable_t pagetable) {
-  // 打印页表的地址
-  printf("page table %p\n", pagetable);
-  // 遍历页表中的每个页表项（PTE）
-  for (int i = 0; i < 512; i++) {
-    // 获取当前页表项
+void vmprint_process(pagetable_t pagetable, int level)
+{
+  for (int i = 0; i < 512; i++)
+  {
     pte_t pte = pagetable[i];
-    // 检查当前页表项是否有效（PTE_V 位是否为 1）
-    if (pte & PTE_V) {
-      // 计算物理地址
-      uint64 pa = PTE2PA(pte);
-      // 打印当前页表项的索引、值和对应的物理地址
-      printf("..%d: pte %p pa %p\n", i, pte, pa);
-      // 获取二级页表
-      pagetable_t second = (pagetable_t)PTE2PA(pte);
-      // 遍历二级页表中的每个页表项（PTE）
-      for (int j = 0; j < 512; j++) {
-        // 获取当前页表项
-        pte = second[j];
-        // 检查当前页表项是否有效（PTE_V 位是否为 1）
-        if (pte & PTE_V) {
-          // 计算物理地址
-          pa = PTE2PA(pte);
-          // 打印当前页表项的索引、值和对应的物理地址
-          printf(".. ..%d: pte %p pa %p\n", j, pte, pa);
-          // 获取三级页表
-          pagetable_t third = (pagetable_t)PTE2PA(pte);
-          // 遍历三级页表中的每个页表项（PTE）
-          for (int k = 0; k < 512; k++) {
-            // 获取当前页表项
-            pte = third[k];
-            // 检查当前页表项是否有效（PTE_V 位是否为 1）
-            if (pte & PTE_V) {
-              // 计算物理地址
-              pa = PTE2PA(pte);
-              // 打印当前页表项的索引、值和对应的物理地址
-              printf(".. .. ..%d: pte %p pa %p\n", k, pte, pa);
-            }
-          }
-        }
+    if ((pte & PTE_V) && (pte & (PTE_R | PTE_W | PTE_X)) == 0)   // the validity of page,the set of three flag 
+    {
+      uint64 child = PTE2PA(pte);
+      switch (level)
+      {
+      case 0:
+        printf("..");
+        break;
+      case 1:
+        printf(".. ..");
+        break;
+      case 2:
+        printf(".. .. ..");
+        break;
+      default:
+        break;
       }
+      printf("%d: pte %p pa %p\n", i, pte, child);
+      vmprint_process((pagetable_t)child, level + 1);  // Recursive call to print the lower-level page table.
+    }
+    else if (pte & PTE_V)                           // deal with the leaf node
+    {
+      uint64 pa = PTE2PA(pte);
+      switch (level)
+      {
+      case 0:
+        printf("..");
+        break;
+      case 1:
+        printf(".. ..");
+        break;
+      case 2:
+        printf(".. .. ..");
+        break;
+      default:
+        break;
+      }
+      printf("%d: pte %p pa %p\n", i, pte, pa);
     }
   }
 }
 
+
+void vmprint(pagetable_t pagetable)
+{
+  printf("page table %p\n",pagetable);
+  vmprint_process(pagetable,0);
+}

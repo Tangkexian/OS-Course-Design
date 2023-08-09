@@ -71,9 +71,9 @@
 //   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)
 #ifdef LAB_PGTBL
-#define USYSCALL (TRAPFRAME - PGSIZE)//定义一个虚拟地址 USYSCALL，用于存储只读页面
+#define USYSCALL (TRAPFRAME - PGSIZE)
 
 struct usyscall {
-  int pid;  // Process ID,存储当前进程的 PID
+  int pid;  // Process ID
 };
 #endif

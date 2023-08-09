@@ -6,7 +6,6 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
-pte_t *walk(pagetable_t pagetable, uint64 va, int alloc);
 
 uint64
 sys_exit(void)
@@ -76,48 +75,46 @@ sys_sleep(void)
   return 0;
 }
 
+pte_t *
+walk(pagetable_t pagetable, uint64 va, int alloc);
 
 #ifdef LAB_PGTBL
 int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
-  // 定义变量
-  uint64 vaddr;
-  int num;
-  uint64 res_addr;
+  struct proc* p =myproc();
+  uint64 usrpge_ptr;
+  int npage;
+  uint64 useraddr;
 
-  // 获取系统调用的参数
-  argaddr(0, &vaddr);
-  argint(1, &num);
-  argaddr(2, &res_addr);
+  argaddr(0,&usrpge_ptr);  // get the three parameters
+  argint(1,&npage);
+  argaddr(2,&useraddr);
 
-  // 获取当前进程和页表
-  struct proc* p = myproc();
-  pagetable_t pagetable = p->pagetable;
-
-  // 初始化结果变量
-  uint64 res = 0;
-
-  // 遍历虚拟地址空间
-  for (int i = 0; i < num; i++) {
-    // 计算当前虚拟地址
-    uint64 va = vaddr + PGSIZE * i;
-    // 获取对应的页表项（PTE）
-    pte_t* pte = walk(pagetable, va, 1);
-    // 检查 PTE_A 位是否为 1
-    if (*pte & PTE_A) {
-      // 清除 PTE_A 位
-      *pte &= (~PTE_A);
-      // 更新结果变量
-      res |= (1L << i);
-    }
+  if(npage>64)
+  {
+    return -1;
   }
+  uint64 bitmap=0;
+  uint64 mask=1;
+  uint64 complement= PTE_A;
+  complement=~complement;  // to eliminent the PTE as the lab hints said 
 
-  // 将结果复制到用户空间
-  copyout(pagetable, res_addr, (char*)&res, sizeof(uint64));
+  int count=0;
 
-  // 返回 0 表示成功
+  for(uint64 page =usrpge_ptr;page<usrpge_ptr+npage*PGSIZE;page+=PGSIZE)  //check the page t
+  {
+    pte_t* pte = walk(p->pagetable,page,0);     //using walk to get the PTE
+    if(*pte&PTE_A)
+    {
+      bitmap=bitmap|(mask<<count);
+      *pte=(*pte)&complement;
+    }
+    count++;
+  }
+  copyout(p->pagetable,useraddr,(char*)&bitmap,sizeof(bitmap));  // using the copyout function
+  
   return 0;
 }
 #endif
@@ -144,3 +141,4 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
