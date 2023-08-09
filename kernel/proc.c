@@ -102,7 +102,7 @@ allocpid() {
 // and return with p->lock held.
 // If there are no free procs, or a memory allocation fails, return 0.
 static struct proc*
-allocproc(void)
+allocproc(void)//lab10 ÐÞ¸Ä
 {
   struct proc *p;
 
@@ -119,6 +119,7 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -141,6 +142,14 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  //lab10(begin)
+  for (int i = 0; i < VMA_MAX; i++)
+  {
+    p->vma[i].valid = 0;
+    p->vma[i].mapcnt = 0;
+  }
+  p->maxaddr = MAXVA - 2 * PGSIZE;
+  //lab10(end)
   return p;
 }
 

@@ -484,3 +484,17 @@ sys_pipe(void)
   }
   return 0;
 }
+
+
+uint64 sys_mmap(void) {
+  uint64 addr;
+  int len, prot, flags, fd, off;
+  if (argaddr(0, &addr) < 0 || argint(1, &len) < 0 || argint(2, &prot) < 0 || argint(3, &flags) < 0 || argint(4, &fd) < 0 || argint(5, &off) < 0)
+    return -1;
+
+  struct proc* p = myproc();
+  struct file* f = p->ofile[fd];
+
+  if ((flags == MAP_SHARED && f->writable == 0 && (prot & PROT_WRITE)))
+    return -1;
+}

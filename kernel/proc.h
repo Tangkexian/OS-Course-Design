@@ -1,3 +1,16 @@
+//lab10(begin) lab10增加
+define VMA_MAX 16
+struct VMA {
+  int valid;
+  uint64 addr;
+  int len;
+  int prot;
+  int flags;
+  int off;
+  struct file* f;
+  uint64 mapcnt;
+};
+//lab10(end)
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;
@@ -105,4 +118,6 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  struct VMA vma[VMA_MAX];//lab10增加
+  uint64 maxaddr;//lab10增加
 };
