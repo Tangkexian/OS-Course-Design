@@ -486,7 +486,7 @@ Failed to shutdown QEMU.  You might need to 'killall qemu' or
         deadline = time.time() + timeout
         try:
             while True:
-                timeleft = deadline - time.time()
+                timeleft = deadline - time.time() + 200
                 if timeleft < 0:
                     sys.stdout.write("Timeout! ")
                     sys.stdout.flush()
